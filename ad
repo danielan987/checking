@@ -1,0 +1,41 @@
+# Import packages
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from sklearn.metrics.pairwise import cosine_similarity
+
+from sklearn.tree import DecisionTreeClassifier
+
+# Prepare your sentences
+sentences = [
+
+"""When the Sabbath was over, Mary Magdalene, and Mary the mother of James, and Salome, bought spices, so that they might come and anoint Him. Very early on the first day of the week, they *came to the tomb when the sun had risen. They were saying to one another, “Who will roll away the stone for us from the entrance of the tomb?” Looking up, they *saw that the stone had been rolled away, although it was extremely large. Entering the tomb, they saw a young man sitting at the right, wearing a white robe; and they were amazed. And he *said to them, “Do not be amazed; you are looking for Jesus the Nazarene, who has been crucified. He has risen; He is not here; behold, here is the place where they laid Him. But go, tell His disciples and Peter, ‘He is going ahead of you to Galilee; there you will see Him, just as He told you.’” They went out and fled from the tomb, for trembling and astonishment had gripped them; and they said nothing to anyone, for they were afraid. [Now after He had risen early on the first day of the week, He first appeared to Mary Magdalene, from whom He had cast out seven demons. She went and reported to those who had been with Him, while they were mourning and weeping. When they heard that He was alive and had been seen by her, they refused to believe it.""",
+
+"""But on the first day of the week, at early dawn, they came to the tomb bringing the spices which they had prepared. And they found the stone rolled away from the tomb, but when they entered, they did not find the body of the Lord Jesus. While they were perplexed about this, behold, two men suddenly stood near them in dazzling clothing; and as the women were terrified and bowed their faces to the ground, the men said to them, “Why do you seek the living One among the dead? He is not here, but He has risen. Remember how He spoke to you while He was still in Galilee, saying that the Son of Man must be delivered into the hands of sinful men, and be crucified, and the third day rise again.” And they remembered His words, and returned from the tomb and reported all these things to the eleven and to all the rest. Now they were Mary Magdalene and Joanna and Mary the mother of James; also the other women with them were telling these things to the apostles. But these words appeared to them as nonsense, and they would not believe them. But Peter got up and ran to the tomb; stooping and looking in, he *saw the linen wrappings only; and he went away to his home, marveling at what had happened.""",
+
+"""Now on the first day of the week Mary Magdalene *came early to the tomb, while it *was still dark, and *saw the stone already taken away from the tomb. So she *ran and *came to Simon Peter and to the other disciple whom Jesus loved, and *said to them, “They have taken away the Lord out of the tomb, and we do not know where they have laid Him.” So Peter and the other disciple went forth, and they were going to the tomb. The two were running together; and the other disciple ran ahead faster than Peter and came to the tomb first; and stooping and looking in, he *saw the linen wrappings lying there; but he did not go in. And so Simon Peter also *came, following him, and entered the tomb; and he *saw the linen wrappings lying there, and the face-cloth which had been on His head, not lying with the linen wrappings, but rolled up in a place by itself. So the other disciple who had first come to the tomb then also entered, and he saw and believed. For as yet they did not understand the Scripture, that He must rise again from the dead. So the disciples went away again to their own homes. But Mary was standing outside the tomb weeping; and so, as she wept, she stooped and looked into the tomb; and she *saw two angels in white sitting, one at the head and one at the feet, where the body of Jesus had been lying. And they *said to her, “Woman, why are you weeping?” She *said to them, “Because they have taken away my Lord, and I do not know where they have laid Him.” When she had said this, she turned around and *saw Jesus standing there, and did not know that it was Jesus. Jesus *said to her, “Woman, why are you weeping? Whom are you seeking?” Supposing Him to be the gardener, she *said to Him, “Sir, if you have carried Him away, tell me where you have laid Him, and I will take Him away.” Jesus *said to her, “Mary!” She turned and *said to Him in Hebrew, “Rabboni!” (which means, Teacher). Jesus *said to her, “Stop clinging to Me, for I have not yet ascended to the Father; but go to My brethren and say to them, ‘I ascend to My Father and your Father, and My God and your God.’” Mary Magdalene *came, announcing to the disciples, “I have seen the Lord,” and that He had said these things to her."""
+
+
+]
+# Tokenize and preprocess your sentences
+tokenized_sentences = [sentence.split() for sentence in sentences]
+
+# Create tagged documents
+tagged_documents = [TaggedDocument(words=doc, tags=[i]) for i, doc in enumerate(tokenized_sentences)]
+
+# hyper parameter uning
+# Train the Sentence2Vec model
+model = Doc2Vec(tagged_documents, vector_size=100, window=5, min_count=1, epochs=20)
+
+# Infer embeddings for target sentence
+target_sentence = """Now after the Sabbath, as it began to dawn toward the first day of the week, Mary Magdalene and the other Mary came to look at the grave. And behold, a severe earthquake had occurred, for an angel of the Lord descended from heaven and came and rolled away the stone and sat upon it. And his appearance was like lightning, and his clothing as white as snow. The guards shook for fear of him and became like dead men. The angel said to the women, “Do not be afraid; for I know that you are looking for Jesus who has been crucified. He is not here, for He has risen, just as He said. Come, see the place where He was lying. Go quickly and tell His disciples that He has risen from the dead; and behold, He is going ahead of you into Galilee, there you will see Him; behold, I have told you.” And they left the tomb quickly with fear and great joy and ran to report it to His disciples. And behold, Jesus met them and greeted them. And they came up and took hold of His feet and worshiped Him. Then Jesus *said to them, “Do not be afraid; go and take word to My brethren to leave for Galilee, and there they will see Me.”"""
+
+inferred_vector = model.infer_vector(target_sentence.split())
+
+# Calculate cosine similarity with each sentence
+similarities = []
+for doc in tagged_documents:
+    similarity = cosine_similarity([model.infer_vector(doc.words)], [inferred_vector])[0][0]
+    similarities.append(similarity)
+
+# Print similarity scores
+for i, sentence in enumerate(sentences):
+    print(f"Similarity with sentence '{sentence}': {similarities[i]}")
